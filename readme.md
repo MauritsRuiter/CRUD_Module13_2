@@ -4,5 +4,7 @@ stap 3. done
 stap 4. done
 stap 5. done
 stap 6. done
-stap 7. wip
+stap 7. done
 stap 8. wip
+stap 9. wip
+stap 10. wip

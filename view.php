@@ -3,9 +3,14 @@
 if (isset($_GET['view'])) {
 	$id = $_GET['view'];
 
-	$stmt = $conn->prepare("SELECT * FROM projects WHERE id=$id");
-	$stmt->execute();
-	$result = $stmt->fetchAll();
+	try {
+        $stmt = $conn->prepare("SELECT * FROM projects WHERE id = :id");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $result = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
 }
 
 ?>

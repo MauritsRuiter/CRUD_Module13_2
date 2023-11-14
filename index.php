@@ -53,7 +53,9 @@
 			echo "Ingelogd als: " . "<b>" . $_SESSION["username"] . "</b>" . "<br><br>" . " <a href='logout.php' class='btn btn-sm btn-outline-danger' style='float:right;' >Log out</a>";
 			echo "</div>";
 		} else {
-			header('Location: login.php');
+			echo "<div style='float:right; position:sticky; right:1.5rem;'>";
+			echo "<span>Je bezoekt de site momenteel als gast, klik </span><a href='login.php'>hier</a><span> om in the loggen</span>";
+			echo "</div>";
 		}
 		?>
 		<div class="container">
@@ -75,14 +77,15 @@
 						<div class="d-flex justify-content-between align-items-center mt-3">
 							<div class="btn-group ">
 								<a href="view.php?view=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-primary" style="text-decoration: none !important;">Bekijken</a>
-								<a href="edit.php?edit=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-success" style="text-decoration: none !important;">Bewerken</a>
-								<a href="index.php?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger" style="text-decoration: none !important;">Verwijderen</a>
+								<?php if (isset($_SESSION["logged_in"])) {
+									echo "<a href='edit.php?edit=" . $row['id'] . "' class='btn btn-sm btn-outline-success' style='text-decoration: none !important;'>Bewerken</a> <a href='index.php?delete=" . $row['id'] . "' class='btn btn-sm btn-outline-danger' style='text-decoration: none !important;'>Verwijderen</a>";
+								} ?>
 							</div>
 						</div>
 					</div>
 				</div>
 			<?php } ?>
-			<div class="d-flex justify-content-center align-items-center m-4 fixed-bottom">
+			<div class="d-flex justify-content-center align-items-center m-4 fixed-bottom .bg-white">
 				<nav aria-label="Page navigation example">
 					<ul class="pagination">
 						<li class="page-item">

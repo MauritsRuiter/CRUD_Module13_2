@@ -1,11 +1,16 @@
 <?php include_once('connect.php');
 
 if (isset($_GET['edit'])) {
-	$id = $_GET['edit'];
+    $id = $_GET['edit'];
 
-	$stmt = $conn->prepare("SELECT * FROM projects WHERE id=$id");
-	$stmt->execute();
-	$result = $stmt->fetchAll();
+    try {
+        $stmt = $conn->prepare("SELECT * FROM projects WHERE id = :id");
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $result = $stmt->fetchAll();
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
 }
 
 if (isset($_POST['submit'])) {
@@ -16,13 +21,25 @@ if (isset($_POST['submit'])) {
     $yearmade = $_POST['yearmade'];
     $github = $_POST['github'];
 
-    $sql = "INSERT INTO projects (title, subtext_small, subtext_large, what_used, year_made, github, img) 
-	VALUES ('$title', '$subsmall', '$sublarge', '$whatused', NOW()), 'github', 'img'";
-    mysqli_query($con, $sql);
-    header('location: index.php');
-}
+    try {
+        $stmt = $conn->prepare("INSERT INTO projects (title, subtext_small, subtext_large, what_used, year_made, github, img) 
+            VALUES (:title, :subsmall, :sublarge, :whatused, NOW(), :github, :img)");
 
+        $stmt->bindParam(':title', $title);
+        $stmt->bindParam(':subsmall', $subsmall);
+        $stmt->bindParam(':sublarge', $sublarge);
+        $stmt->bindParam(':whatused', $whatused);
+        $stmt->bindParam(':github', $github);
+        $stmt->bindValue(':img', 'img'); // Replace 'img' with your actual image value
+
+        $stmt->execute();
+        header('location: index.php?page=1');
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
