@@ -2,7 +2,10 @@
 
 if (isset($_GET['view'])) {
 	$id = $_GET['view'];
-	$result = $pdo->query("SELECT * FROM projects WHERE id=$id");
+
+	$stmt = $conn->prepare("SELECT * FROM projects WHERE id=$id");
+	$stmt->execute();
+	$result = $stmt->fetchAll();
 }
 
 ?>

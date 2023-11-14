@@ -2,7 +2,10 @@
 
 if (isset($_GET['edit'])) {
 	$id = $_GET['edit'];
-	$result = $pdo->query("SELECT * FROM projects WHERE id=$id");
+
+	$stmt = $conn->prepare("SELECT * FROM projects WHERE id=$id");
+	$stmt->execute();
+	$result = $stmt->fetchAll();
 }
 
 if (isset($_POST['submit'])) {
@@ -15,7 +18,7 @@ if (isset($_POST['submit'])) {
 
     $sql = "INSERT INTO projects (title, subtext_small, subtext_large, what_used, year_made, github, img) 
 	VALUES ('$title', '$subsmall', '$sublarge', '$whatused', NOW()), 'github', 'img'";
-    mysqli_query($conn, $sql);
+    mysqli_query($con, $sql);
     header('location: index.php');
 }
 

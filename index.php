@@ -1,5 +1,4 @@
 <?php
-session_start();
 
 include_once('connect.php');
 
@@ -16,11 +15,58 @@ include_once('connect.php');
 
 <body>
 	<main>
-	<a href="login.php" style="float:right; position:sticky; top:1.5rem; right:1.5rem ">Login</a>
+		<?php
+		include_once "connect.php";
+		if (isset($_POST["search"])) {
+			$stmt = $conn->prepare("SELECT * FROM projects WHERE title LIKE '%" . 
+			$_POST["search"] . "%'" . " 
+			OR subtext_small LIKE '%" . $_POST["search"] . "%'" . " 
+			OR subtext_large LIKE '%" . $_POST["search"] . "%'" . " 
+			OR what_used LIKE '%" . $_POST["search"] . "%'" . " 
+			OR year_made LIKE '%" . $_POST["search"] . "%'" . " 
+			ORDER BY year_made DESC ");
+		} else {
+			// Assuming 2 projects per page
+			$projectsPerPage = 2;
+
+			// Calculate total number of projects
+			$totalProjectsStmt = $conn->prepare("SELECT COUNT(*) FROM projects");
+			$totalProjectsStmt->execute();
+			$totalProjects = $totalProjectsStmt->fetchColumn();
+
+			// Calculate total number of pages
+			$totalPages = ceil($totalProjects / $projectsPerPage);
+
+			// Get current page from the URL parameter
+			$page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
+
+			// Calculate offset for the SQL query
+			$offset = ($page - 1) * $projectsPerPage;
+
+			// Fetch projects based on the current page
+			$stmt = $conn->prepare("SELECT * FROM projects LIMIT $projectsPerPage OFFSET $offset");
+			$stmt->execute();
+			$result = $stmt->fetchAll();
+		}
+		?>
+		<a href="login.php" style="float:right; position:sticky; right:1.5rem">Login</a>
+		<br>
+		<a href="signup.php" style="float:right; position:sticky; right:1.5rem">Sign in</a>
+		<?php
+		session_start();
+		if (isset($_SESSION["logged_in"])) {
+			echo "<br>";
+			echo "<div style='float:right; position:sticky; right:1.5rem'>";
+			echo "Huidig ingelogd als: " . $_SESSION["username"];
+			echo "</div>";
+		} else {
+			header('Location: login.php');
+		}
+		?>
 		<div class="container">
 			<div class="d-flex justify-content-center align-items-center m-4">
 				<nav aria-label="search and filter">
-					<form action="" method="POST">
+					<form action="index.php" method="post">
 						<input type="search" class="form-control ds-input" id="search-input" name="search" placeholder="Search..." aria-label="Search for..." autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-owns="algolia-autocomplete-listbox-0" dir="auto" style="position: relative; vertical-align: top;">
 					</form>
 				</nav>
@@ -43,20 +89,29 @@ include_once('connect.php');
 					</div>
 				</div>
 			<?php } ?>
-			<div class="d-flex justify-content-center align-items-center m-4">
+			<div class="d-flex justify-content-center align-items-center m-4 fixed-bottom">
 				<nav aria-label="Page navigation example">
 					<ul class="pagination">
 						<li class="page-item">
-							<a class="page-link" href="#">Previous</a>
+							<a class="page-link" href="?page=<?php echo max($page - 1, 1); ?>" aria-label="Previous">
+								<span aria-hidden="true">&laquo;</span>
+							</a>
 						</li>
-						<li class="page-item"><a class="page-link" href="?p=0">1</a></li>
-						<li class="page-item"><a class="page-link" href="?p=1">2</a></li>
-						<li class="page-item"><a class="page-link" href="?p=2">3</a></li>
-						<li class="page-item"><a class="page-link" href="?p=">Next</a></li>
+
+						<?php for ($i = 0; $i < $totalPages; $i++) { ?>
+							<li class="page-item <?php echo $i + 1 == $page ? 'active' : ''; ?>">
+								<a class="page-link" href="?page=<?php echo $i + 1; ?>"><?php echo $i + 1; ?></a>
+							</li>
+						<?php } ?>
+
+						<li class="page-item">
+							<a class="page-link" href="?page=<?php echo min($page + 1, $totalPages); ?>" aria-label="Next">
+								<span aria-hidden="true">&raquo;</span>
+							</a>
+						</li>
 					</ul>
 				</nav>
 			</div>
-
 		</div>
 	</main>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
