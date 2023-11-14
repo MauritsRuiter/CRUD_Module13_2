@@ -1,6 +1,6 @@
-1. done 
-2. done 
-3. done 
-4. done
-5. WIP previous and next don't work yet.
-6. WIP login + users is not finished
+stap 1. done
+stap 2. done 
+stap 3. done 
+stap 4. done
+stap 5. done
+stap 6. almost done
