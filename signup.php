@@ -29,14 +29,25 @@
         </form>
     <?php
         include_once "connect.php";
-
-        if(isset($_POST['submit'])) {
+        if (isset($_POST['submit'])) {
             $username = $_POST["username"];
             $password = password_hash($_POST["password"], PASSWORD_DEFAULT);
-            $sql = "INSERT INTO users (username, password) VALUES ('$username', '$password')";
-            $conn->exec($sql);
-            header("Location: login.php");
-        }
+        
+            try {
+                // Assuming $conn is your PDO connection object
+                include_once('connect.php');
+        
+                $stmt = $conn->prepare("INSERT INTO users (username, password) VALUES (:username, :password)");
+                $stmt->bindParam(':username', $username);
+                $stmt->bindParam(':password', $password);
+                $stmt->execute();
+        
+                header("Location: login.php");
+                exit();
+            } catch (PDOException $e) {
+                echo "Error: " . $e->getMessage();
+            }
+        }        
     ?>
     </main>
     <script src="/docs/5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>

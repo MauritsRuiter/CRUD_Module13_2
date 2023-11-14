@@ -1,8 +1,4 @@
-<?php
-
-include_once('connect.php');
-
-?>
+<?php include_once('connect.php'); ?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -15,16 +11,17 @@ include_once('connect.php');
 
 <body>
 	<main>
-		<?php
-		include_once "connect.php";
+		<?php include_once "connect.php";
 		if (isset($_POST["search"])) {
-			$stmt = $conn->prepare("SELECT * FROM projects WHERE title LIKE '%" . 
-			$_POST["search"] . "%'" . " 
-			OR subtext_small LIKE '%" . $_POST["search"] . "%'" . " 
-			OR subtext_large LIKE '%" . $_POST["search"] . "%'" . " 
-			OR what_used LIKE '%" . $_POST["search"] . "%'" . " 
-			OR year_made LIKE '%" . $_POST["search"] . "%'" . " 
-			ORDER BY year_made DESC ");
+			$stmt = $conn->prepare("SELECT * FROM projects WHERE title LIKE '%" .
+				$_POST["search"] . "%'" . " 
+				OR subtext_small LIKE '%" . $_POST["search"] . "%'" . " 
+				OR subtext_large LIKE '%" . $_POST["search"] . "%'" . " 
+				OR what_used LIKE '%" . $_POST["search"] . "%'" . " 
+				OR year_made LIKE '%" . $_POST["search"] . "%'" . " 
+				ORDER BY year_made DESC ");
+			$stmt->execute();
+			$result = $stmt->fetchAll();
 		} else {
 			// Assuming 2 projects per page
 			$projectsPerPage = 2;
@@ -48,16 +45,12 @@ include_once('connect.php');
 			$stmt->execute();
 			$result = $stmt->fetchAll();
 		}
-		?>
-		<a href="login.php" style="float:right; position:sticky; right:1.5rem">Login</a>
-		<br>
-		<a href="signup.php" style="float:right; position:sticky; right:1.5rem">Sign in</a>
-		<?php
+
 		session_start();
 		if (isset($_SESSION["logged_in"])) {
 			echo "<br>";
 			echo "<div style='float:right; position:sticky; right:1.5rem'>";
-			echo "Huidig ingelogd als: " . $_SESSION["username"];
+			echo "Ingelogd als: " . "<b>" . $_SESSION["username"] . "</b>" . "<br><br>" . " <a href='logout.php' class='btn btn-sm btn-outline-danger' style='float:right;' >Log out</a>";
 			echo "</div>";
 		} else {
 			header('Location: login.php');

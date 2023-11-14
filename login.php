@@ -27,34 +27,38 @@
 			<hr>
 			<a class="btn btn-secondary w-100 py-2 mt-2" href="signup.php">Back to sign in page</a>
 		</form>
-		<?php
-
-		include_once('connect.php');
-
+		<?php include_once('connect.php');
 		if (isset($_POST["submit"])) {
 			$username = $_POST["username"];
-
-			$stmt = $conn->prepare("SELECT * FROM users WHERE username = :username");
-			$stmt->bindParam(':username', $username);
-			$stmt->execute();
-			$user = $stmt->fetch();
-
-			if ($user) {
-				$password = $_POST["password"];
-
-				if (password_verify($password, $user["password"])) {
-					session_start();
-					$_SESSION["logged_in"] = true;
-					$_SESSION["username"] = $user["username"];
-					header("Location: index.php?page=0");
-					exit();
+		
+			try {
+				// Assuming $conn is your PDO connection object
+				include_once('connect.php');
+		
+				$stmt = $conn->prepare("SELECT * FROM users WHERE username = :username");
+				$stmt->bindParam(':username', $username);
+				$stmt->execute();
+				$user = $stmt->fetch();
+		
+				if ($user) {
+					$password = $_POST["password"];
+		
+					if (password_verify($password, $user["password"])) {
+						session_start();
+						$_SESSION["logged_in"] = true;
+						$_SESSION["username"] = $user["username"];
+						header("Location: index.php?page=0");
+						exit();
+					} else {
+						echo "Wrong password";
+					}
 				} else {
-					echo "Wrong password";
+					echo "User not found";
 				}
-			} else {
-				echo "User not found";
+			} catch (PDOException $e) {
+				echo "Error: " . $e->getMessage();
 			}
-		}
+		}		
 		?>
 	</main>
 	<script src="/docs/5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
