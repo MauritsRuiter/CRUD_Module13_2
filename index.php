@@ -6,6 +6,15 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 	<title>Portfolio Website - Overzichtspagina</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous" />
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+	<script>
+		function confirmDelete(id) {
+			var confirmation = confirm("Are you sure you want to delete this record?");
+			if (confirmation) {
+				window.location.href = 'index.php?delete=' + id;
+			}
+		}
+	</script>
 </head>
 
 <body>
@@ -45,17 +54,18 @@
 	}
 	session_start();
 	if (isset($_SESSION["logged_in"])) {
-		echo "<span class='card shadow-sm p-2 w-25' m-1>";
+		echo "<span style='position:sticky; top:0px; z-index:999;' class='card shadow-sm p-2' m-1>";
 		echo "Ingelogd als: " . "<b>" . $_SESSION["username"] . "</b>";
+		echo "<a href='add.php' class='btn btn-secondary' name='submit' type='submit' style='position:absolute; right:12px; top:12px; z-index:999 !important;'>Add New Record</a>";
 		echo "</span>";
-		echo "<a href='logout.php' class='btn btn-danger' style='position:absolute; right:1.5rem; bottom:1.5rem; z-index:999 !important;' >Log uit</a>";
+		echo "<a href='logout.php' class='btn btn-danger' style='position:sticky; top:94%; left:1rem; z-index:999 !important;'>Log uit</a>";
 	} else {
 		echo "<div style='float:right; position:sticky; right:1.5rem;'>";
 		echo "<span>Je bezoekt de site momenteel als gast, klik </span><a href='login.php'>hier</a><span> om in the loggen</span>";
 		echo "</div>";
 	}
 	?>
-	<div class="container">
+	<div class="container" style="min-height:810px;">
 		<div class="d-flex justify-content-center align-items-center m-4">
 			<nav aria-label="search and filter">
 				<form action="index.php" method="post">
@@ -63,7 +73,19 @@
 				</form>
 			</nav>
 		</div>
-		<?php foreach ($result as $row) { ?>
+		<?php if (isset($_GET['delete'])) {
+			$idToDelete = $_GET['delete'];
+
+			try {
+				$stmt = $conn->prepare("DELETE FROM projects WHERE id = :idToDelete");
+				$stmt->bindParam(':idToDelete', $idToDelete);
+				$stmt->execute();
+				header('location: index.php?page=1');
+			} catch (PDOException $e) {
+				echo "Error: " . $e->getMessage();
+			}
+		}
+		foreach ($result as $row) { ?>
 			<div class="row row-cols-1 row-cols	-sm-1 row-cols-md-1 g-1 projects">
 				<div class="project card shadow-sm card-body m-4">
 					<div class="card-text">
@@ -72,17 +94,35 @@
 						<div><?php echo $row['year_made']; ?></div>
 					</div>
 					<div class="d-flex justify-content-between align-items-center mt-3">
-						<div class="btn-group ">
+						<div class="btn-group">
 							<a href="view.php?view=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-primary" style="text-decoration: none !important;">Bekijken</a>
-							<?php if (isset($_SESSION["logged_in"])) {
-								echo "<a href='edit.php?edit=" . $row['id'] . "' class='btn btn-sm btn-outline-success' style='text-decoration: none !important;'>Bewerken</a> <a href='index.php?delete=" . $row['id'] . "' class='btn btn-sm btn-outline-danger' style='text-decoration: none !important;'>Verwijderen</a>";
-							} ?>
+							<?php if (isset($_SESSION["logged_in"])) { ?>
+								<a href="edit.php?edit=<?php echo $row["id"]; ?>" class="btn btn-sm btn-outline-success" style="text-decoration: none !important; border-radius: 0;">Bewerken</a>
+								<a href="index.php?delete=<?php echo $row['id']; ?>" class="btn btn-sm btn-outline-danger" style="text-decoration: none !important; border-radius: 0;" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal<?php echo $row['id']; ?>">Verwijderen</a>
+								<div class="modal fade" id="confirmDeleteModal<?php echo $row['id']; ?>" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+									<div class="modal-dialog">
+										<div class="modal-content">
+											<div class="modal-header">
+												<h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Deletion</h5>
+												<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+											</div>
+											<div class="modal-body">
+												<span>Are you sure you want to delete this record?</span>
+											</div>
+											<div class="modal-footer">
+												<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+												<a href="index.php?delete=<?php echo $row['id']; ?>" class="btn btn-danger">Yes</a>
+											</div>
+										</div>
+									</div>
+								</div>
+							<?php } ?>
 						</div>
 					</div>
 				</div>
 			</div>
 		<?php } ?>
-		<div class="d-flex justify-content-center align-items-center m-4">
+		<div class="d-flex justify-content-center align-items-center">
 			<nav aria-label="Page navigation example">
 				<ul class="pagination">
 					<li class="page-item">
@@ -90,18 +130,15 @@
 							<span aria-hidden="true">&laquo;</span>
 						</a>
 					</li>
-
 					<?php
 					// Initialize $totalPages for the case when a search is performed
 					$totalPages = isset($totalPages) ? $totalPages : 1;
-
 					for ($i = 0; $i < $totalPages; $i++) {
 					?>
 						<li class="page-item <?php echo $i + 1 == $page ? 'active' : ''; ?>">
 							<a class="page-link" href="?page=<?php echo $i + 1; ?>"><?php echo $i + 1; ?></a>
 						</li>
 					<?php } ?>
-
 					<li class="page-item">
 						<a class="page-link" href="?page=<?php echo min($page + 1, $totalPages); ?>" aria-label="Next">
 							<span aria-hidden="true">&raquo;</span>
@@ -110,10 +147,10 @@
 				</ul>
 			</nav>
 		</div>
-		<footer class="fixed-bottom card" style="z-index: -999 !important; padding: 20px; text-align: center;">
-			<p style="margin: 0; color:#000;">&copy; <?php echo date('Y'); ?> Portfolio Website Maurits Ruiter. <br> All rights reserved. <br><br><a href="#" style="color:#000; text-decoration: none;">Privacy Policy</a> <a href="#" style="color:#000; text-decoration: none;">Terms of Service</a>
-		</footer>
 	</div>
+	<footer class="card w-100" style="padding: 20px; text-align: center;">
+		<p style="margin: 0; color:#000;">&copy; <?php echo date('Y'); ?> Portfolio Website Maurits Ruiter. <br> All rights reserved. <br><br><a href="#" style="color:#000; text-decoration: none;">Privacy Policy</a> <a href="#" style="color:#000; text-decoration: none;">Terms of Service</a>
+	</footer>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
 </body>
 

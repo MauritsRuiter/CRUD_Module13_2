@@ -1,6 +1,4 @@
-<?php
-
-include_once('database.php');
+<?php include_once('database.php');
 
 try {
     $conn = new PDO("mysql:host=$dbservername;dbname=$dbname", $dbusername, $dbpassword);
