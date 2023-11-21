@@ -41,7 +41,15 @@ if (isset($_GET['view'])) {
 							<br>
 							<span>Link naar github project: </span><a href="<?php echo $row['github']; ?>"><?php echo $row['github']; ?></a>
 							<br>
-							<div><?php echo $row['img']; ?></div>
+							<!-- if else statement to show text if no image is found. -->
+						<?php if(!empty($row['img']) && file_exists($row['img'])) { ?>
+						<img src="<?php echo $row['img']?>" alt="image" class="rounded-3 mt-3">
+							<?php } else {
+								echo "<div class='mt-3'>";
+								echo "Geen bijlage om te laten zien.";
+								echo "</div>";
+							}
+						?>
 						</div>
 					</div>
 				</div>
